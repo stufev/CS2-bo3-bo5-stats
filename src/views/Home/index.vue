@@ -20,7 +20,8 @@
             </tr>
             <tr v-for="(item, index) in dynamicData" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.name }}</td>
+              <td class="main__name--full" @click="goToPlayer(item.name)">{{ item.name }}</td>
+              <td class="main__name--short">RuSsss</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
                 {{ item.kd }}
@@ -44,7 +45,8 @@
             </tr>
             <tr v-for="(item, index) in dynamicData" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.name }}</td>
+              <td class="main__name--full">{{ item.name }}</td>
+              <td class="main__name--short">RuSsss</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
                 {{ item.kd }}
@@ -66,7 +68,8 @@
             </tr>
             <tr v-for="(item, index) in dynamicData" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.name }}</td>
+              <td class="main__name--full">{{ item.name }}</td>
+              <td class="main__name--short">RuSsss</td>
               <td>{{ item.adr }}</td>
             </tr>
           </table>
@@ -78,6 +81,7 @@
 
 <script setup>
 import {computed, ref} from "vue";
+import router from "@/router/index.js";
 
 const dynamicData = computed(() => {
   return [
@@ -111,6 +115,11 @@ function scrollTo(view) {
   window.scrollTo({top: y, behavior: 'smooth'});
 }
 
+function goToPlayer(name) {
+  //todo pass only player nick lowercase
+  router.push({name: 'player', params: {name: 'russss'}});
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -131,11 +140,16 @@ function scrollTo(view) {
 
   @media (max-width: 768px) {
     padding-top: calc(96px + 60px);
+    padding-bottom: 60px;
   }
 }
 
 .main__block {
   padding-bottom: 85px;
+
+  @media (max-width: 768px) {
+    padding-bottom: 65px;
+  }
 }
 
 .main__item {
@@ -152,6 +166,11 @@ function scrollTo(view) {
 .main__title {
   font-size: 32px;
   margin-bottom: 50px;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+    margin-bottom: 25px;
+  }
 }
 
 .main__content {
@@ -161,6 +180,13 @@ function scrollTo(view) {
   padding-bottom: 31px;
   padding-left: 42px;
   padding-right: 42px;
+
+  @media(max-width: 768px) {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 .main__table {
@@ -177,6 +203,10 @@ function scrollTo(view) {
 
   &:last-child {
     text-align: right;
+  }
+
+  @media(max-width: 768px) {
+    text-align: center;
   }
 }
 
@@ -197,7 +227,37 @@ function scrollTo(view) {
   &.td--red {
     color: #ff2323;
   }
+
+  @media(max-width: 768px) {
+    text-align: center;
+  }
 }
 
+.main__name--full {
+  cursor: pointer;
+  transition: all .2s linear;
+
+  &:hover {
+    color: #ff2323;
+  }
+
+  @media(max-width: 768px) {
+    display: none;
+  }
+}
+
+.main__name--short {
+  display: none;
+  cursor: pointer;
+  transition: all .2s linear;
+
+  &:hover {
+    color: #ff2323;
+  }
+
+  @media(max-width: 768px) {
+    display: block;
+  }
+}
 
 </style>

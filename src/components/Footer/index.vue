@@ -10,7 +10,7 @@
         <nav class="footer__nav">
           <ul class="footer__list">
             <li class="footer__item">
-              <a class="footer__link" href="">Статистика</a>
+              <a class="footer__link" href="/">Статистика</a>
             </li>
             <li class="footer__item">
               <a class="footer__link" href="">Собрать состав</a>

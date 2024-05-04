@@ -9,7 +9,7 @@
       <nav class="nav">
         <ul class="nav__list">
           <li class="nav__item">
-            <a class="nav__link" href="">СТАТИСТИКА</a>
+            <a class="nav__link" href="/">СТАТИСТИКА</a>
           </li>
           <li class="nav__item">
             <a class="nav__link" href="">СОБРАТЬ СОСТАВ</a>
@@ -27,10 +27,15 @@
           <span></span>
           <ul class="burger__menu">
             <li class="nav__item">
-              <a class="nav__link" href="">СТАТИСТИКА</a>
+              <a class="nav__link" href="/">СТАТИСТИКА</a>
             </li>
             <li class="nav__item">
               <a class="nav__link" href="">СОБРАТЬ СОСТАВ</a>
+            </li>
+            <li class="nav__item">
+              <button class="login-button">
+                Log in
+              </button>
             </li>
           </ul>
         </div>
@@ -45,6 +50,9 @@
   position: fixed;
   width: 100vw;
   z-index: 999;
+  -webkit-box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
+  box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
 }
 
 .header__wrapper {
@@ -215,5 +223,12 @@
 
 .burger__wrapper input:checked ~ ul {
   transform: none;
+}
+
+.nav__item {
+  .login-button {
+    display: block;
+    margin-left: auto;
+  }
 }
 </style>
