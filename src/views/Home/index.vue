@@ -117,7 +117,8 @@ function scrollTo(view) {
 
 function goToPlayer(name) {
   //todo pass only player nick lowercase
-  router.push({name: 'player', params: {name: 'russss'}});
+  router.push({name: 'Player', params: {name: 'russss'}});
+  window.scrollTo(0,0);
 }
 
 </script>

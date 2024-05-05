@@ -105,12 +105,10 @@
   </main>
 </template>
 
-<script>
-
-export default {
-  name: 'player',
-  props: ['name'],
-}
+<script setup>
+defineProps({
+  name: String
+});
 </script>
 
 <style lang="scss" scoped>

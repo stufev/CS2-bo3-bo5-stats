@@ -17,12 +17,8 @@
         </ul>
       </nav>
       <div class="header__buttons">
-        <button class="login-button">
-          Log in
-        </button>
-        <button class="signin-button">
-          Sign in
-        </button>
+        <a class="login-button" href="/login">Log in</a>
+        <a class="signin-button" href="/signup">Sign up</a>
       </div>
       <nav class="burger" role="navigation">
         <div class="burger__wrapper">
@@ -38,14 +34,10 @@
               <a class="nav__link" href="">СОБРАТЬ СОСТАВ</a>
             </li>
             <li class="nav__item">
-              <button class="login-button">
-                Log in
-              </button>
+              <a class="login-button" href="/login">Log in</a>
             </li>
             <li class="nav__item">
-              <button class="signin-button">
-                Sign in
-              </button>
+              <a class="signin-button" href="/signup">Sign up</a>
             </li>
           </ul>
         </div>
@@ -60,9 +52,9 @@
   position: fixed;
   width: 100vw;
   z-index: 999;
-  -webkit-box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
-  -moz-box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
-  box-shadow: 0px 6px 6px -1px rgba(0,0,0,0.1);
+  -webkit-box-shadow: 0px 6px 6px -1px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 6px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 6px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .header__wrapper {
