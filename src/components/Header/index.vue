@@ -16,9 +16,14 @@
           </li>
         </ul>
       </nav>
-      <button class="login-button">
-        Log in
-      </button>
+      <div class="header__buttons">
+        <button class="login-button">
+          Log in
+        </button>
+        <button class="signin-button">
+          Sign in
+        </button>
+      </div>
       <nav class="burger" role="navigation">
         <div class="burger__wrapper">
           <input type="checkbox"/>
@@ -35,6 +40,11 @@
             <li class="nav__item">
               <button class="login-button">
                 Log in
+              </button>
+            </li>
+            <li class="nav__item">
+              <button class="signin-button">
+                Sign in
               </button>
             </li>
           </ul>
@@ -99,6 +109,11 @@
   font-weight: 500;
 }
 
+.header__buttons {
+  display: flex;
+  column-gap: 15px;
+}
+
 .login-button {
   width: 85px;
   height: 35px;
@@ -113,6 +128,27 @@
   &:hover {
     background: #fff;
     color: #C91419;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.signin-button {
+  width: 85px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C91419;
+  background: #fff;
+  transition: all .2s linear;
+  border-radius: 15px;
+
+  &:hover {
+    background: #C91419;
+    color: #fff;
   }
 
   @media (max-width: 768px) {
@@ -229,6 +265,12 @@
   .login-button {
     display: block;
     margin-left: auto;
+  }
+
+  .signin-button {
+    display: block;
+    margin-left: auto;
+    border: 1px solid #C91419;
   }
 }
 </style>
