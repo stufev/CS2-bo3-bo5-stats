@@ -13,7 +13,7 @@
               <a class="footer__link" href="/">Статистика</a>
             </li>
             <li class="footer__item">
-              <a class="footer__link" href="">Собрать состав</a>
+              <a class="footer__link" href="/create-game">Собрать состав</a>
             </li>
           </ul>
         </nav>
@@ -38,6 +38,8 @@ const getYear = computed(() => {
 <style lang="scss" scoped>
 .footer {
   background: #323232;
+  z-index: 1;
+  position: relative;
 }
 
 .footer__wrapper {

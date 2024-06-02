@@ -31,8 +31,6 @@
 
 <script setup>
 import {ref} from "vue";
-import InputGroup from 'primevue/inputgroup';
-import InputGroupAddon from 'primevue/inputgroupaddon';
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password';
 import bgImage from '@/assets/images/blob.svg'

@@ -12,7 +12,7 @@
             <a class="nav__link" href="/">СТАТИСТИКА</a>
           </li>
           <li class="nav__item">
-            <a class="nav__link" href="">СОБРАТЬ СОСТАВ</a>
+            <a class="nav__link" href="/create-game">СОБРАТЬ СОСТАВ</a>
           </li>
         </ul>
       </nav>
@@ -31,7 +31,7 @@
               <a class="nav__link" href="/">СТАТИСТИКА</a>
             </li>
             <li class="nav__item">
-              <a class="nav__link" href="">СОБРАТЬ СОСТАВ</a>
+              <a class="nav__link" href="/create-game">СОБРАТЬ СОСТАВ</a>
             </li>
             <li class="nav__item">
               <a class="login-button" href="/login">Log in</a>
@@ -255,14 +255,20 @@
 
 .nav__item {
   .login-button {
-    display: block;
+    display: flex;
     margin-left: auto;
+    width: 100%;
+    text-align: center;
+    color: #fff;
   }
 
   .signin-button {
-    display: block;
+    display: flex;
     margin-left: auto;
     border: 1px solid #C91419;
+    width: 100%;
+    text-align: center;
+    color: #C91419;
   }
 }
 </style>
