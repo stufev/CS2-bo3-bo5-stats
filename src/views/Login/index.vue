@@ -3,27 +3,21 @@
     <div class="login__background">
       <img class="login__image" :src="bgImage" alt="">
     </div>
-
     <div class="login__wrapper">
-
       <div class="login__title">Войти</div>
-
       <div class="login__input">
         <div class="login__form">
           <label for="username">Username</label>
           <InputText id="username" v-model="login"/>
         </div>
       </div>
-
       <div class="login__input">
         <div class="login__form">
           <label for="password">Password</label>
           <Password v-model="password" :feedback="false" toggleMask id="password"/>
         </div>
       </div>
-
-      <button class="login__button">Войти</button>
-
+      <button class="login__button" @click="handleSubmit">Войти</button>
       <a class="login__subtitle" href="/signup">зарегистрироваться</a>
     </div>
   </div>
@@ -38,6 +32,10 @@ import bgImage from '@/assets/images/blob.svg'
 const login = ref('');
 const password = ref('');
 
+const handleSubmit = () => {
+  console.log(login.value)
+  console.log(password.value)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -109,6 +107,10 @@ const password = ref('');
     height: 30px;
     padding-left: 16px;
   }
+}
+
+.login__error {
+  color: #ff3f80;
 }
 
 .login__button {

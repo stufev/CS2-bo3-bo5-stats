@@ -3,27 +3,22 @@
     <div class="login__background">
       <img class="login__image" :src="bgImage" alt="">
     </div>
-
     <div class="login__wrapper">
-
       <div class="login__title">Зарегистрироваться</div>
-
       <div class="login__input">
         <div class="login__form">
           <label for="username">Username</label>
           <InputText id="username" v-model="login"/>
         </div>
       </div>
-
       <div class="login__input">
         <div class="login__form">
           <label for="password">Password</label>
           <Password v-model="password" :feedback="false" toggleMask id="password"/>
         </div>
       </div>
-
-      <button class="login__button">Зарегистрироваться</button>
-
+      <div class="login__error">{{ error }}</div>
+      <button class="login__button" @click="handleSubmit">Зарегистрироваться</button>
       <a class="login__subtitle" href="/login">войти</a>
     </div>
   </div>
@@ -34,10 +29,16 @@ import {ref} from "vue";
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password';
 import bgImage from '@/assets/images/blob.svg'
+import useSignup from "@/composables/useSignup.js";
+
+const {error, signup} = useSignup();
 
 const login = ref('');
 const password = ref('');
 
+const handleSubmit = async () => {
+  await signup(login.value, password.value);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -117,6 +118,10 @@ const password = ref('');
     height: 30px;
     padding-left: 16px;
   }
+}
+
+.login__error {
+  color: #C91419;
 }
 
 .login__button {
