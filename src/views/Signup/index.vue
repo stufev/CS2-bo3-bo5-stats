@@ -38,6 +38,9 @@ const password = ref('');
 
 const handleSubmit = async () => {
   await signup(login.value, password.value);
+  if (!this.error) {
+    console.log('user sign up');
+  }
 }
 </script>
 

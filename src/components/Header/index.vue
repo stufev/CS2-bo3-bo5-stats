@@ -17,8 +17,9 @@
         </ul>
       </nav>
       <div class="header__buttons">
-        <a class="login-button" href="/login">Log in</a>
-        <a class="signin-button" href="/signup">Sign up</a>
+        <a class="login-button" href="/login" v-if="!user">Log in</a>
+        <a class="signin-button" href="/signup" v-if="!user">Sign up</a>
+        <div class="signin-button" v-if="user" @click="userLogout">Log out</div>
       </div>
       <nav class="burger" role="navigation">
         <div class="burger__wrapper">
@@ -33,11 +34,14 @@
             <li class="nav__item">
               <a class="nav__link" href="/create-game">СОБРАТЬ СОСТАВ</a>
             </li>
-            <li class="nav__item">
+            <li class="nav__item" v-if="!user">
               <a class="login-button" href="/login">Log in</a>
             </li>
-            <li class="nav__item">
+            <li class="nav__item" v-if="!user">
               <a class="signin-button" href="/signup">Sign up</a>
+            </li>
+            <li class="nav__item" v-if="user">
+              <a class="login-button" href="/login" @click="userLogout">Log out</a>
             </li>
           </ul>
         </div>
@@ -45,6 +49,20 @@
     </div>
   </header>
 </template>
+
+<script setup>
+import getUser from "@/composables/getUser.js";
+import useLogout from "@/composables/useLogout.js";
+
+const {error, logout} = useLogout();
+const {user} = getUser();
+
+const userLogout = async () => {
+  await logout()
+}
+
+
+</script>
 
 <style lang="scss" scoped>
 .header {

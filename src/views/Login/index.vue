@@ -7,8 +7,8 @@
       <div class="login__title">Войти</div>
       <div class="login__input">
         <div class="login__form">
-          <label for="username">Username</label>
-          <InputText id="username" v-model="login"/>
+          <label for="username">Email</label>
+          <InputText id="username" v-model="email"/>
         </div>
       </div>
       <div class="login__input">
@@ -17,6 +17,7 @@
           <Password v-model="password" :feedback="false" toggleMask id="password"/>
         </div>
       </div>
+      <div class="login__error">{{ error }}</div>
       <button class="login__button" @click="handleSubmit">Войти</button>
       <a class="login__subtitle" href="/signup">зарегистрироваться</a>
     </div>
@@ -28,13 +29,18 @@ import {ref} from "vue";
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password';
 import bgImage from '@/assets/images/blob.svg'
+import useLogin from "@/composables/useLogin.js";
 
-const login = ref('');
+const email = ref('');
 const password = ref('');
 
-const handleSubmit = () => {
-  console.log(login.value)
-  console.log(password.value)
+const {error, login} = useLogin();
+
+const handleSubmit = async () => {
+  await login(email.value, password.value);
+  if (!error.value) {
+    console.log('user logged in');
+  }
 }
 </script>
 
@@ -110,7 +116,7 @@ const handleSubmit = () => {
 }
 
 .login__error {
-  color: #ff3f80;
+  color: #C91419;
 }
 
 .login__button {
