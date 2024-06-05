@@ -30,16 +30,20 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password';
 import bgImage from '@/assets/images/blob.svg'
 import useSignup from "@/composables/useSignup.js";
+import {useRouter} from "vue-router";
 
 const {error, signup} = useSignup();
 
 const login = ref('');
 const password = ref('');
 
+const router = useRouter();
+
 const handleSubmit = async () => {
   await signup(login.value, password.value);
-  if (!this.error) {
+  if (!error.value) {
     console.log('user sign up');
+    await router.push('/');
   }
 }
 </script>

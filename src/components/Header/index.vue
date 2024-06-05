@@ -53,12 +53,18 @@
 <script setup>
 import getUser from "@/composables/getUser.js";
 import useLogout from "@/composables/useLogout.js";
+import {useRouter} from "vue-router";
 
 const {error, logout} = useLogout();
 const {user} = getUser();
 
+const router = useRouter();
+
 const userLogout = async () => {
-  await logout()
+  await logout();
+  if (!error.value) {
+    await router.push('/');
+  }
 }
 
 
