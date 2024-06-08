@@ -5,6 +5,7 @@ import Login from "../views/Login/index.vue";
 import Signup from "../views/Signup/index.vue";
 import CreateGame from "../views/CreateGame/index.vue";
 import Edit from "../views/Edit/index.vue";
+import CreateUser from "../views/CreateUser/index.vue";
 import {projectAuth} from '../firebase/config'
 
 //auth guard
@@ -53,6 +54,12 @@ const router = createRouter({
             name: 'Edit',
             component: Edit,
             props: true,
+            beforeEnter: requireAuth,
+        },
+        {
+            path: '/create',
+            name: 'CreateUser',
+            component: CreateUser,
             beforeEnter: requireAuth,
         },
     ]
