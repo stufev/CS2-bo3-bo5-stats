@@ -10,8 +10,9 @@ import {projectAuth} from '../firebase/config'
 //auth guard
 const requireAuth = (to, from, next) => {
     let user = projectAuth.currentUser;
-    console.log('current user', user)
-    if (!user) {
+    const allowedUserUid = [import.meta.env.VITE_MUSE_KEY, import.meta.env.VITE_FROGSTER_KEY]; // UID пользователей
+
+    if (!user || !allowedUserUid.includes(user.uid)) {
         next({name: 'Login'});
     } else {
         next();

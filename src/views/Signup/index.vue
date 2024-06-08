@@ -42,7 +42,6 @@ const router = useRouter();
 const handleSubmit = async () => {
   await signup(login.value, password.value);
   if (!error.value) {
-    console.log('user sign up');
     await router.push('/');
   }
 }
