@@ -80,8 +80,9 @@
 </template>
 
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import router from "@/router/index.js";
+import getCollection from "@/composables/getCollection.js";
 
 const dynamicData = computed(() => {
   return [
@@ -104,6 +105,9 @@ const dynamicData = computed(() => {
   ]
 });
 
+const {error, documents} = getCollection('users');
+console.log(documents)
+
 const tier1 = ref(null);
 const tier2 = ref(null);
 const adr = ref(null);
@@ -118,7 +122,7 @@ function scrollTo(view) {
 function goToPlayer(name) {
   //todo pass only player nick lowercase
   router.push({name: 'Player', params: {name: 'russss'}});
-  window.scrollTo(0,0);
+  window.scrollTo(0, 0);
 }
 
 </script>
