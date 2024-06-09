@@ -18,9 +18,11 @@
               <th>K/D</th>
               <th>РЕЙТИНГ</th>
             </tr>
-            <tr v-for="(item, index) in dynamicData" :key="item.id">
+            <tr v-for="(item, index) in documents" :key="index">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(item.name)">{{ item.name }}</td>
+              <td class="main__name--full" @click="goToPlayer(index)">{{ item.name }} "{{ item.nickname }}"
+                {{ item.surname }}
+              </td>
               <td class="main__name--short">RuSsss</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
@@ -105,8 +107,13 @@ const dynamicData = computed(() => {
   ]
 });
 
-const {error, documents} = getCollection('users');
-console.log(documents)
+const documents = ref(null);
+
+onMounted(async () => {
+  const {error, documents: usersCollection} = await getCollection('users')
+  documents.value = usersCollection.value;
+  console.log(documents.value)
+})
 
 const tier1 = ref(null);
 const tier2 = ref(null);

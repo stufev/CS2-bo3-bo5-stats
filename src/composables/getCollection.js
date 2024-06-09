@@ -7,13 +7,9 @@ const getCollection = async (collection) => {
 
     let collectionRef = projectFirestore.collection(collection);
 
-    console.log(collectionRef)
-
-
     try {
         let res = await collectionRef.get()
         res = res.docs.map(doc => doc.data());
-        console.log(res)
         documents.value = res;
     } catch (err) {
         console.log(err)
