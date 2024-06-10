@@ -8,9 +8,17 @@ const getCollection = async (collection) => {
     let collectionRef = projectFirestore.collection(collection);
 
     try {
+        let result = [];
         let res = await collectionRef.get()
-        res = res.docs.map(doc => doc.data());
-        documents.value = res;
+
+        res.docs.forEach(doc => {
+            if (doc.exists) {
+                result.push({...doc.data(), id: doc.id})
+            }
+        })
+
+        documents.value = result;
+        error.value = null
     } catch (err) {
         console.log(err)
         error.value = error;

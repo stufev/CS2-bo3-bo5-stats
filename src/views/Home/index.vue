@@ -18,12 +18,12 @@
               <th>K/D</th>
               <th>РЕЙТИНГ</th>
             </tr>
-            <tr v-for="(item, index) in documents" :key="index">
+            <tr v-for="(item, index) in documents" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(index)">{{ item.name }} "{{ item.nickname }}"
-                {{ item.surname }}
+              <td class="main__name--full" @click="goToPlayer(item.id)">
+                {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
               </td>
-              <td class="main__name--short">RuSsss</td>
+              <td class="main__name--short">{{ item.nickname }}</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
                 {{ item.kd }}
@@ -86,6 +86,34 @@ import {computed, onMounted, ref} from "vue";
 import router from "@/router/index.js";
 import getCollection from "@/composables/getCollection.js";
 
+const documents = ref(null);
+
+onMounted(async () => {
+  const {error, documents: usersCollection} = await getCollection('users');
+  documents.value = usersCollection.value;
+  formData(usersCollection.value);
+})
+
+const averageRounds = computed(() => {
+  const totalRounds = documents.value.reduce((sum, player) => sum + player.rounds, 0);
+  return totalRounds / documents.value.length;
+})
+
+const formData = (data) => {
+  let result = null;
+
+  result = data.map(player => {
+    return {
+      ...player,
+      tier: player.rounds > averageRounds.value ? 1 : 2,
+      kd: player.k - player.d
+    }
+  })
+
+  console.log(result)
+  documents.value = result;
+}
+
 const dynamicData = computed(() => {
   return [
     {
@@ -107,13 +135,6 @@ const dynamicData = computed(() => {
   ]
 });
 
-const documents = ref(null);
-
-onMounted(async () => {
-  const {error, documents: usersCollection} = await getCollection('users')
-  documents.value = usersCollection.value;
-  console.log(documents.value)
-})
 
 const tier1 = ref(null);
 const tier2 = ref(null);
