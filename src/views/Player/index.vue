@@ -106,9 +106,23 @@
 </template>
 
 <script setup>
+import {onMounted, ref} from "vue";
+import getCollection from "@/composables/getCollection.js";
+
 defineProps({
-  name: String
+  name: String,
+  id: String,
 });
+
+const documents = ref(null);
+// todo придумать как отображать пользователя id или name
+
+onMounted(async () => {
+  const {error, documents: usersCollection} = await getCollection('users');
+  documents.value = usersCollection.value;
+  console.log(documents.value)
+})
+
 </script>
 
 <style lang="scss" scoped>

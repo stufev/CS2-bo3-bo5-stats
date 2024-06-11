@@ -18,15 +18,15 @@
               <th>K/D</th>
               <th>РЕЙТИНГ</th>
             </tr>
-            <tr v-for="(item, index) in documents" :key="item.id">
+            <tr v-for="(item, index) in tierList1" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(item.id)">
+              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
                 {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
               </td>
-              <td class="main__name--short">{{ item.nickname }}</td>
+              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
-                {{ item.kd }}
+                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${item.kd}` }}
               </td>
               <td>{{ item.rating }}</td>
             </tr>
@@ -45,13 +45,15 @@
               <th>K/D</th>
               <th>РЕЙТИНГ</th>
             </tr>
-            <tr v-for="(item, index) in dynamicData" :key="item.id">
+            <tr v-for="(item, index) in tierList1" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full">{{ item.name }}</td>
-              <td class="main__name--short">RuSsss</td>
+              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
+                {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
+              </td>
+              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
-                {{ item.kd }}
+                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${item.kd}` }}
               </td>
               <td>{{ item.rating }}</td>
             </tr>
@@ -68,10 +70,12 @@
               <th>ИГРОК</th>
               <th>ADR</th>
             </tr>
-            <tr v-for="(item, index) in dynamicData" :key="item.id">
+            <tr v-for="(item, index) in documents" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full">{{ item.name }}</td>
-              <td class="main__name--short">RuSsss</td>
+              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
+                {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
+              </td>
+              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
               <td>{{ item.adr }}</td>
             </tr>
           </table>
@@ -85,6 +89,7 @@
 import {computed, onMounted, ref} from "vue";
 import router from "@/router/index.js";
 import getCollection from "@/composables/getCollection.js";
+import {transliterate} from 'transliteration';
 
 const documents = ref(null);
 
@@ -114,27 +119,17 @@ const formData = (data) => {
   documents.value = result;
 }
 
-const dynamicData = computed(() => {
-  return [
-    {
-      id: 0,
-      name: 'Руслан “RuSsss” Шигапов',
-      rounds: 745,
-      kd: '+116',
-      rating: 1.16,
-      adr: 123,
-    },
-    {
-      id: 1,
-      name: 'Алексей “ololosha ^_^” Каплун',
-      rounds: 453,
-      kd: '+106',
-      rating: 1.12,
-      adr: 99,
-    }
-  ]
-});
+const tierList1 = computed(() => {
+  if (documents.value) {
+    return documents.value.filter(player => player.tier === 1)
+  }
+})
 
+const tierList2 = computed(() => {
+  if (documents.value) {
+    return documents.value.filter(player => player.tier === 2)
+  }
+})
 
 const tier1 = ref(null);
 const tier2 = ref(null);
@@ -147,10 +142,28 @@ function scrollTo(view) {
   window.scrollTo({top: y, behavior: 'smooth'});
 }
 
-function goToPlayer(name) {
-  //todo pass only player nick lowercase
-  router.push({name: 'Player', params: {name: 'russss'}});
+function goToPlayer(name, id) {
+  let correctName = transformString(name);
+  router.push({name: 'Player', params: {name: correctName, id: id}});
   window.scrollTo(0, 0);
+}
+
+
+
+function transformString(input) {
+  // Транслитерация строки
+  let transliterated = transliterate(input);
+
+  // Удаляем все символы, кроме букв, цифр и пробелов
+  let cleaned = transliterated.replace(/[^a-zA-Z0-9\s]/g, '');
+
+  // Преобразуем строку в нижний регистр
+  cleaned = cleaned.toLowerCase();
+
+  // Заменяем пробелы на тире
+  cleaned = cleaned.replace(/\s+/g, '-');
+
+  return cleaned;
 }
 
 </script>
