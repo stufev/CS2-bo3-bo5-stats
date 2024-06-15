@@ -20,13 +20,13 @@
             </tr>
             <tr v-for="(item, index) in tierList1" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
+              <td class="main__name--full" @click="goToPlayer(item.id)">
                 {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
               </td>
-              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
+              <td class="main__name--short" @click="goToPlayer(item.id)">{{ item.nickname }}</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
-                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${item.kd}` }}
+                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${-item.kd}` }}
               </td>
               <td>{{ item.rating }}</td>
             </tr>
@@ -45,15 +45,15 @@
               <th>K/D</th>
               <th>РЕЙТИНГ</th>
             </tr>
-            <tr v-for="(item, index) in tierList1" :key="item.id">
+            <tr v-for="(item, index) in tierList2" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
+              <td class="main__name--full" @click="goToPlayer(item.id)">
                 {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
               </td>
-              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
+              <td class="main__name--short" @click="goToPlayer(item.id)">{{ item.nickname }}</td>
               <td>{{ item.rounds }}</td>
               <td :class="{'td--green': item.kd > 0, 'td--red': item.kd < 0}">
-                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${item.kd}` }}
+                {{ item.kd > 0 ? `+ ${item.kd}` : `- ${-item.kd}` }}
               </td>
               <td>{{ item.rating }}</td>
             </tr>
@@ -68,18 +68,25 @@
             <tr>
               <th>#</th>
               <th>ИГРОК</th>
+              <th v-if="isAdmin">Данные</th>
               <th>ADR</th>
             </tr>
             <tr v-for="(item, index) in documents" :key="item.id">
               <td>{{ index + 1 }}</td>
-              <td class="main__name--full" @click="goToPlayer(item.nickname, item.id)">
+              <td class="main__name--full" @click="goToPlayer(item.id)">
                 {{ item.name }} "{{ item.nickname }}" {{ item.surname }}
               </td>
-              <td class="main__name--short" @click="goToPlayer(item.nickname, item.id)">{{ item.nickname }}</td>
+              <td class="main__name--short" @click="goToPlayer(item.id)">{{ item.nickname }}</td>
+              <td class="main__edit" v-if="isAdmin">
+                <span @click="editPlayer(item.id)">РЕД.</span>
+              </td>
               <td>{{ item.adr }}</td>
             </tr>
           </table>
         </div>
+        <a class="add-player" href="/create" v-if="isAdmin">
+          Добавить игрока
+        </a>
       </div>
     </div>
   </main>
@@ -90,6 +97,7 @@ import {computed, onMounted, ref} from "vue";
 import router from "@/router/index.js";
 import getCollection from "@/composables/getCollection.js";
 import {transliterate} from 'transliteration';
+import {projectAuth} from "@/firebase/config.js";
 
 const documents = ref(null);
 
@@ -97,11 +105,7 @@ onMounted(async () => {
   const {error, documents: usersCollection} = await getCollection('users');
   documents.value = usersCollection.value;
   formData(usersCollection.value);
-})
-
-const averageRounds = computed(() => {
-  const totalRounds = documents.value.reduce((sum, player) => sum + player.rounds, 0);
-  return totalRounds / documents.value.length;
+  await checkUser();
 })
 
 const formData = (data) => {
@@ -111,13 +115,35 @@ const formData = (data) => {
     return {
       ...player,
       tier: player.rounds > averageRounds.value ? 1 : 2,
-      kd: player.k - player.d
+      kd: player.k - player.d,
+      rating: calculateRating(player)
     }
   })
 
-  console.log(result)
   documents.value = result;
 }
+
+const calculateRating = (player) => {
+  const AVERAGE_KPR = 0.679;
+  const AVERAGE_SPR = 0.317;
+  const AVERAGE_RMK = 1.277;
+
+  if (player) {
+    const killRating = player.k / player.rounds / AVERAGE_KPR;
+    const survivalRating = (player.rounds  - player.d) / player.rounds / AVERAGE_SPR;
+    const roundsWithMultipleKillsRating = (player.k1 + 4 * player.k2 + 9 * player.k3 + 16 * player.k4 + 25 * player.k5) / player.rounds / AVERAGE_RMK;
+    const rating = (killRating + 0.7 * survivalRating + roundsWithMultipleKillsRating) / 2.7;
+
+    return isNaN(rating) ? 0 : Math.round(rating * 100) / 100;
+  }
+}
+
+const averageRounds = computed(() => {
+  if (documents.value) {
+    const totalRounds = documents.value.reduce((sum, player) => sum + player.rounds, 0);
+    return totalRounds / documents.value.length;
+  }
+})
 
 const tierList1 = computed(() => {
   if (documents.value) {
@@ -142,28 +168,23 @@ function scrollTo(view) {
   window.scrollTo({top: y, behavior: 'smooth'});
 }
 
-function goToPlayer(name, id) {
-  let correctName = transformString(name);
-  router.push({name: 'Player', params: {name: correctName, id: id}});
+function goToPlayer(id) {
+  router.push({name: 'Player', params: {id: id}});
   window.scrollTo(0, 0);
 }
 
+//admin panel
+const isAdmin = ref(false);
+const checkUser = () => {
+  let user = projectAuth.currentUser;
+  const allowedUserUid = [import.meta.env.VITE_MUSE_KEY, import.meta.env.VITE_FROGSTER_KEY]; // UID пользователей
 
+  isAdmin.value = !(!user || !allowedUserUid.includes(user.uid));
+}
 
-function transformString(input) {
-  // Транслитерация строки
-  let transliterated = transliterate(input);
-
-  // Удаляем все символы, кроме букв, цифр и пробелов
-  let cleaned = transliterated.replace(/[^a-zA-Z0-9\s]/g, '');
-
-  // Преобразуем строку в нижний регистр
-  cleaned = cleaned.toLowerCase();
-
-  // Заменяем пробелы на тире
-  cleaned = cleaned.replace(/\s+/g, '-');
-
-  return cleaned;
+const editPlayer = (id) => {
+  router.push({name: 'EditUser', params: {id: id}});
+  window.scrollTo(0, 0);
 }
 
 </script>
@@ -306,4 +327,30 @@ function transformString(input) {
   }
 }
 
+.main__edit {
+  color: #ff2323;
+  cursor: pointer;
+}
+
+.add-player {
+  padding-left: 15px;
+  padding-right: 15px;
+  width: 235px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C91419;
+  background: #fff;
+  transition: all 0.2s linear;
+  border-radius: 15px;
+  margin-top: 64px;
+  margin-bottom: 96px;
+  cursor: pointer;
+
+  &:hover {
+    background: #C91419;
+    color: #fff;
+  }
+}
 </style>

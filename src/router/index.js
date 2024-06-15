@@ -4,7 +4,7 @@ import Player from "../views/Player/index.vue";
 import Login from "../views/Login/index.vue";
 import Signup from "../views/Signup/index.vue";
 import CreateGame from "../views/CreateGame/index.vue";
-import Edit from "../views/Edit/index.vue";
+import EditUser from "../views/EditUser/index.vue";
 import CreateUser from "../views/CreateUser/index.vue";
 import {projectAuth} from '../firebase/config'
 
@@ -29,7 +29,7 @@ const router = createRouter({
             component: Home
         },
         {
-            path: '/player/:name',
+            path: '/player/:id',
             name: 'Player',
             component: Player,
             props: true,
@@ -51,8 +51,8 @@ const router = createRouter({
         },
         {
             path: '/edit/:id',
-            name: 'Edit',
-            component: Edit,
+            name: 'EditUser',
+            component: EditUser,
             props: true,
             beforeEnter: requireAuth,
         },

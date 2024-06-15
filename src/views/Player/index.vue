@@ -2,19 +2,19 @@
   <main class="main">
     <div class="main__wrapper container">
       <div class="player">
-        <div class="player__wrapper">
+        <div class="player__wrapper" v-if="currentPlayer">
           <!--  Двойной блок  -->
           <div class="player__blocks">
             <div class="player__avatar">
-              <img class="player__image" src="https://placehold.co/140x140" :alt="`${name} avatar`"/>
-              <div class="player__nickname">{{ name }}</div>
+              <img class="player__image" src="https://placehold.co/140x140" :alt="`${currentPlayer.nickname} avatar`"/>
+              <div class="player__nickname">{{ currentPlayer.nickname }}</div>
             </div>
             <div class="player__stats">
               <div class="player__title">Основная статистика</div>
               <div class="player__content">
                 <div class="player__data">
                   <div class="player__key">TIER</div>
-                  <div class="player__value">1</div>
+                  <div class="player__value">{{ currentPlayer.tier }}</div>
                 </div>
                 <div class="player__data">
                   <div class="player__key">МЕСТО</div>
@@ -106,21 +106,45 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import getCollection from "@/composables/getCollection.js";
 
-defineProps({
-  name: String,
+const props = defineProps({
   id: String,
 });
 
 const documents = ref(null);
-// todo придумать как отображать пользователя id или name
-
 onMounted(async () => {
   const {error, documents: usersCollection} = await getCollection('users');
   documents.value = usersCollection.value;
-  console.log(documents.value)
+  formData(usersCollection.value);
+})
+
+const formData = (data) => {
+  let result = null;
+
+  result = data.map(player => {
+    return {
+      ...player,
+      tier: player.rounds > averageRounds.value ? 1 : 2,
+      kd: player.k - player.d
+    }
+  })
+
+  documents.value = result;
+}
+
+const currentPlayer = computed(() => {
+  if (documents.value) {
+    return documents.value.find(doc => doc.id === props.id)
+  }
+})
+
+const averageRounds = computed(() => {
+  if (documents.value) {
+    const totalRounds = documents.value.reduce((sum, player) => sum + player.rounds, 0);
+    return totalRounds / documents.value.length;
+  }
 })
 
 </script>
@@ -134,6 +158,7 @@ onMounted(async () => {
 .player {
   padding-top: calc(96px + 83px);
   padding-bottom: 96px;
+  min-height: 100vh;
 
   @media (max-width: 768px) {
     padding-top: calc(40px + 60px);

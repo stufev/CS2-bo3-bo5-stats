@@ -1,99 +1,105 @@
 <template>
-  <div class="create">
-    <div class="create__title">Создать игрока</div>
-    <form class="create__wrapper" ref="form">
-      <div class="create__input">
-        <div class="create__form">
+  <div class="edit">
+    <div class="edit__title">Редактировать игрока {{ nickname }}</div>
+    <form class="edit__wrapper" ref="form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="name">Имя</label>
           <InputText id="name" v-model="name"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="surname">Фамилия</label>
           <InputText id="surname" v-model="surname"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="nickname">Ник</label>
           <InputText id="nickname" v-model="nickname"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="rounds">Количество раундов</label>
           <InputText id="rounds" v-model="rounds"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="adr">ADR</label>
           <InputText id="adr" v-model="adr"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="kills">Kills</label>
           <InputText id="kills" v-model="kills"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="Deaths">Deaths</label>
           <InputText id="Deaths" v-model="deaths"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">Assists</label>
           <InputText id="assists" v-model="assists"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">1 K</label>
           <InputText id="assists" v-model="k1"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">2 K</label>
           <InputText id="assists" v-model="k2"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">3 K</label>
           <InputText id="assists" v-model="k3"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">4 K</label>
           <InputText id="assists" v-model="k4"/>
         </div>
       </div>
-      <div class="create__input">
-        <div class="create__form">
+      <div class="edit__input">
+        <div class="edit__form">
           <label for="assists">5 K</label>
           <InputText id="assists" v-model="k5"/>
         </div>
       </div>
     </form>
-    <p class="create__error">{{ error }}</p>
-    <button class="create__button" @click="handleSubmit">ДОБАВИТЬ</button>
+    <p class="edit__error">{{ error }}</p>
+    <button class="edit__button" @click="handleSubmit">ИЗМЕНИТЬ</button>
   </div>
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import InputText from 'primevue/inputtext'
-import useCollection from "@/composables/useCollection.js";
+import editCollection from "@/composables/editCollection.js";
+import getCollectionById from "@/composables/getCollectionById.js";
+import router from "@/router/index.js";
+
+const props = defineProps({
+  id: String
+});
 
 const form = ref(null);
 
-const {error, addDoc} = useCollection('users');
+const {error, editDoc} = editCollection('users');
 
 const name = ref('');
 const surname = ref('');
@@ -128,23 +134,52 @@ const handleSubmit = async () => {
     k5: +k5.value,
   };
 
-  await addDoc(user);
+  // await addDoc(user);
+  await editDoc(user, props.id);
   if (!error.value) {
-    alert(`Игрок ${user.name} добавлен`);
-    window.location.reload();
+    alert(`Игрок ${user.name} изменён`);
+    await router.push('/');
   }
+}
+
+const player = ref(null);
+onMounted(async () => {
+  const {error, document: userCollection} = await getCollectionById('users', props.id);
+  player.value = userCollection.value;
+  console.log(player.value)
+
+  if (player.value) {
+    updateForm();
+  }
+})
+
+const updateForm = () => {
+  name.value = player.value?.name;
+  surname.value = player.value?.surname;
+  nickname.value = player.value?.nickname;
+  rounds.value = player.value?.rounds;
+  adr.value = player.value?.adr;
+  kills.value = player.value?.k;
+  deaths.value = player.value?.d;
+  assists.value = player.value?.a;
+  k1.value = player.value?.k1;
+  k2.value = player.value?.k2;
+  k3.value = player.value?.k3;
+  k4.value = player.value?.k4;
+  k5.value = player.value?.k5;
 }
 </script>
 
+
 <style lang="scss" scoped>
-.create {
+.edit {
   background-color: #161616;
   min-height: 100vh;
   padding-top: calc(96px + 83px);
   padding-bottom: 90px;
 }
 
-.create__title {
+.edit__title {
   font-size: 32px;
   margin-bottom: 36px;
   text-align: center;
@@ -152,19 +187,19 @@ const handleSubmit = async () => {
   font-weight: 500;
 }
 
-.create__wrapper {
+.edit__wrapper {
   max-width: 622px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.create__form {
+.edit__form {
   display: flex;
   flex-direction: column;
   column-gap: 2px;
 }
 
-.create__input {
+.edit__input {
   margin-bottom: 20px;
   width: 100%;
 
@@ -174,11 +209,11 @@ const handleSubmit = async () => {
   }
 }
 
-.create__error {
+.edit__error {
   color: #C91419;
 }
 
-.create__button {
+.edit__button {
   width: 100%;
   height: 35px;
   display: flex;
