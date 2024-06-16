@@ -145,8 +145,7 @@ const handleSubmit = async () => {
 const player = ref(null);
 onMounted(async () => {
   const {error, document: userCollection} = await getCollectionById('users', props.id);
-  player.value = userCollection.value;
-  console.log(player.value)
+  player.value = userCollection?.value;
 
   if (player.value) {
     updateForm();

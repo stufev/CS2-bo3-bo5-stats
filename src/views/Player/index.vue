@@ -116,7 +116,7 @@ const props = defineProps({
 const documents = ref(null);
 onMounted(async () => {
   const {error, documents: usersCollection} = await getCollection('users');
-  documents.value = usersCollection.value;
+  documents.value = usersCollection?.value;
   formData(usersCollection.value);
 })
 

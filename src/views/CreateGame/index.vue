@@ -1,67 +1,134 @@
 <template>
   <main class="main">
-    <div class="create__wrapper container">
+    <div class="create__wrapper container" v-if="players">
       <div class="create__title">Выберете игроков</div>
       <div class="create__select">
         <MultiSelect
             class="w-full md:w-20rem"
-            v-model="selectedCities"
-            :options="cities"
+            v-model="selectedPlayers"
+            :options="players"
             filter
-            optionLabel="name"
+            optionLabel="nickname"
             placeholder="Пикните 10 игроков"
             :minSelectedLabels="10"
             :maxSelectedLabels="10"
         />
       </div>
-      <button class="create__btn">Рассчитать</button>
-      <div class="create__content">
+      <div class="create__select">
+        <h2>Укажите игроков которые должны быть в одной команде</h2>
+        <div>
+          <MultiSelect
+              class="w-full md:w-20rem"
+              v-model="mandatoryPairs"
+              :options="players"
+              filter
+              optionLabel="nickname"
+              placeholder="Должны играть вместе"
+              :minSelectedLabels="2"
+              :maxSelectedLabels="5"
+          />
+        </div>
+      </div>
+      <button class="create__btn" @click="splitTeams(selectedPlayers, mandatoryPairs)">Рассчитать</button>
+      <div class="create__content" v-if="completedTeam1 && completedTeam2">
         <ul class="create__list">
-          <li class="create__item" v-for="i in 5">
-            <div class="create__name">RuSsss</div>
-            <div class="create__score">123</div>
+          <li class="create__item" v-for="player in completedTeam1" :key="player.id">
+            <div class="create__name">{{ player.nickname }}</div>
+            <!--            <Dropdown v-model="selectedPlayer1" :options="players" optionLabel="nickname" placeholder="Выбрать игрока"/>-->
+            <div class="create__score">{{ player.adr }}</div>
           </li>
           <li class="create__item create__item--final">
             <div class="create__name">СРЕДНИЙ ADR</div>
-            <div class="create__score">123</div>
+            <div class="create__score">{{ teamAdr1 }}</div>
           </li>
         </ul>
         <ul class="create__list">
-          <li class="create__item" v-for="i in 5">
-            <div class="create__name">RuSsss</div>
-            <div class="create__score">123</div>
+          <li class="create__item" v-for="player in completedTeam2" :key="player.id">
+            <div class="create__name">{{ player.nickname }}</div>
+            <!--            <Dropdown v-model="selectedPlayer2" :options="players" optionLabel="nickname" placeholder="Выбрать игрока"/>-->
+            <div class="create__score">{{ player.adr }}</div>
           </li>
           <li class="create__item create__item--final">
             <div class="create__name">СРЕДНИЙ ADR</div>
-            <div class="create__score">123</div>
+            <div class="create__score">{{ teamAdr2 }}</div>
           </li>
         </ul>
       </div>
-      <button class="create__btn create__btn--share">Поделиться</button>
+      <button class="create__btn create__btn--share" v-if="completedTeam1 && completedTeam2">Поделиться</button>
     </div>
   </main>
 </template>
 
 <script setup>
 import MultiSelect from 'primevue/multiselect';
-import {ref} from "vue";
+import Dropdown from 'primevue/dropdown';
+import {onMounted, ref} from "vue";
+import getCollection from "@/composables/getCollection.js";
 
-const selectedCities = ref();
-const cities = ref([
-  {name: 'RuSsss', code: '1'},
-  {name: 'RuSsss', code: '2'},
-  {name: 'RuSsss', code: '3'},
-  {name: 'RuSsss', code: '4'},
-  {name: 'RuSsss', code: '5'},
-  {name: 'RuSsss', code: '6'},
-  {name: 'RuSsss', code: '7'},
-  {name: 'RuSsss', code: '8'},
-  {name: 'RuSsss', code: '9'},
-  {name: 'RuSsss', code: '10'},
-  {name: 'RuSsss', code: '11'},
-  {name: 'RuSsss', code: '12'},
-  {name: 'RuSsss', code: '13'},
+const players = ref(null);
+
+onMounted(async () => {
+  const {error, documents: usersCollection} = await getCollection('users');
+  players.value = usersCollection?.value;
+})
+
+const selectedPlayers = ref();
+
+const mandatoryPairs = ref([
+  // Пример обязательных пар игроков
+  ["tr1sotni", "fr0gster"],
+  // Добавьте остальные пары здесь
 ]);
+
+const completedTeam1 = ref(null);
+const teamAdr1 = ref(null);
+const completedTeam2 = ref(null);
+const teamAdr2 = ref(null);
+
+const splitTeams = (players, pairs) => {
+  let team1 = [];
+  let team2 = [];
+
+  // Сначала распределяем обязательные пары
+  pairs.forEach(pair => {
+    const player1 = players.find(p => p.nickname === pair[0]);
+    const player2 = players.find(p => p.nickname === pair[1]);
+
+    if (player1 && player2) {
+      // Если сумма ADR текущей команды 1 меньше чем команды 2
+      if (team1.reduce((sum, p) => sum + p.adr, 0) <= team2.reduce((sum, p) => sum + p.adr, 0)) {
+        team1.push(player1, player2);
+      } else {
+        team2.push(player1, player2);
+      }
+
+      // Удаляем этих игроков из списка доступных
+      players = players.filter(p => p.nickname !== pair[0] && p.nickname !== pair[1]);
+    }
+  });
+
+  // Сортируем оставшихся игроков по ADR
+  players.sort((a, b) => b.adr - a.adr);
+
+  // Добавляем оставшихся игроков по очереди в команды
+  players.forEach(player => {
+    if (team1.reduce((sum, p) => sum + p.adr, 0) <= team2.reduce((sum, p) => sum + p.adr, 0)) {
+      team1.push(player);
+    } else {
+      team2.push(player);
+    }
+  });
+
+  console.log(team1)
+  const adr1 = team1.reduce((total, next) => total + next.adr, 0)
+  const adr2 = team2.reduce((total, next) => total + next.adr, 0)
+
+  // return { team1, team2 };
+  completedTeam1.value = team1;
+  completedTeam2.value = team2;
+  teamAdr1.value = adr1;
+  teamAdr2.value = adr2;
+};
 </script>
 
 <style lang="scss" scoped>
