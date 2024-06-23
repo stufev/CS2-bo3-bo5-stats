@@ -102,6 +102,7 @@ import {projectAuth} from "@/firebase/config.js";
 const documents = ref(null);
 
 onMounted(async () => {
+  // todo создать стор с данными игроков из firebase и в этом сторе сделать computed свойства, а не тут
   const {error, documents: usersCollection} = await getCollection('users');
   documents.value = usersCollection?.value;
   formData(usersCollection.value);

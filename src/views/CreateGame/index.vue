@@ -19,7 +19,19 @@
         <div>
           <MultiSelect
               class="w-full md:w-20rem"
-              v-model="mandatoryPairs"
+              v-model="mandatoryPairs1"
+              :options="players"
+              filter
+              optionLabel="nickname"
+              placeholder="Должны играть вместе"
+              :minSelectedLabels="2"
+              :maxSelectedLabels="5"
+          />
+        </div>
+        <div>
+          <MultiSelect
+              class="w-full md:w-20rem"
+              v-model="mandatoryPairs2"
               :options="players"
               filter
               optionLabel="nickname"
@@ -29,12 +41,13 @@
           />
         </div>
       </div>
-      <button class="create__btn" @click="splitTeams(selectedPlayers, mandatoryPairs)">Рассчитать</button>
+      <button class="create__btn" @click="splitTeams(selectedPlayers, mandatoryPairs1, mandatoryPairs2)">
+        Рассчитать
+      </button>
       <div class="create__content" v-if="completedTeam1 && completedTeam2">
         <ul class="create__list">
           <li class="create__item" v-for="player in completedTeam1" :key="player.id">
             <div class="create__name">{{ player.nickname }}</div>
-            <!--            <Dropdown v-model="selectedPlayer1" :options="players" optionLabel="nickname" placeholder="Выбрать игрока"/>-->
             <div class="create__score">{{ player.adr }}</div>
           </li>
           <li class="create__item create__item--final">
@@ -45,7 +58,6 @@
         <ul class="create__list">
           <li class="create__item" v-for="player in completedTeam2" :key="player.id">
             <div class="create__name">{{ player.nickname }}</div>
-            <!--            <Dropdown v-model="selectedPlayer2" :options="players" optionLabel="nickname" placeholder="Выбрать игрока"/>-->
             <div class="create__score">{{ player.adr }}</div>
           </li>
           <li class="create__item create__item--final">
@@ -74,44 +86,38 @@ onMounted(async () => {
 
 const selectedPlayers = ref();
 
-const mandatoryPairs = ref([
-  // Пример обязательных пар игроков
-  ["tr1sotni", "fr0gster"],
-  // Добавьте остальные пары здесь
-]);
+const mandatoryPairs1 = ref([]);
+const mandatoryPairs2 = ref([]);
 
 const completedTeam1 = ref(null);
 const teamAdr1 = ref(null);
 const completedTeam2 = ref(null);
 const teamAdr2 = ref(null);
 
-const splitTeams = (players, pairs) => {
+// todo добавить валидацию
+const splitTeams = (players, groups1, groups2) => {
   let team1 = [];
   let team2 = [];
 
-  // Сначала распределяем обязательные пары
-  pairs.forEach(pair => {
-    const player1 = players.find(p => p.nickname === pair[0]);
-    const player2 = players.find(p => p.nickname === pair[1]);
+  // Объединяем все игроки вместе
+  const allMandatoryPlayers = [...groups1, ...groups2];
+  const mandatoryPlayersIds = new Set(allMandatoryPlayers.map(player => player.id));
+  let remainingPlayers = players.filter(player => !mandatoryPlayersIds.has(player.id));
 
-    if (player1 && player2) {
-      // Если сумма ADR текущей команды 1 меньше чем команды 2
-      if (team1.reduce((sum, p) => sum + p.adr, 0) <= team2.reduce((sum, p) => sum + p.adr, 0)) {
-        team1.push(player1, player2);
-      } else {
-        team2.push(player1, player2);
-      }
+  // Сортируем всех игроков по ADR
+  remainingPlayers.sort((a, b) => b.adr - a.adr);
+  allMandatoryPlayers.sort((a, b) => b.adr - a.adr);
 
-      // Удаляем этих игроков из списка доступных
-      players = players.filter(p => p.nickname !== pair[0] && p.nickname !== pair[1]);
-    }
-  });
+  // Добавляем обязательные группы игроков в команды
+  const addGroupToTeam = (group, team) => {
+    team.push(...group);
+  };
 
-  // Сортируем оставшихся игроков по ADR
-  players.sort((a, b) => b.adr - a.adr);
+  addGroupToTeam(groups1, team1);
+  addGroupToTeam(groups2, team2);
 
-  // Добавляем оставшихся игроков по очереди в команды
-  players.forEach(player => {
+  // Добавляем оставшихся игроков поочередно в команды
+  remainingPlayers.forEach(player => {
     if (team1.reduce((sum, p) => sum + p.adr, 0) <= team2.reduce((sum, p) => sum + p.adr, 0)) {
       team1.push(player);
     } else {
@@ -119,11 +125,13 @@ const splitTeams = (players, pairs) => {
     }
   });
 
-  console.log(team1)
+  // Объединяем все игроки в командах и сортируем по ADR
+  team1 = [...team1].sort((a, b) => b.adr - a.adr);
+  team2 = [...team2].sort((a, b) => b.adr - a.adr);
+
   const adr1 = team1.reduce((total, next) => total + next.adr, 0)
   const adr2 = team2.reduce((total, next) => total + next.adr, 0)
 
-  // return { team1, team2 };
   completedTeam1.value = team1;
   completedTeam2.value = team2;
   teamAdr1.value = adr1;
