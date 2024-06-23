@@ -1,7 +1,7 @@
 <template>
   <main class="main">
     <div class="create__wrapper container" v-if="players">
-      <div class="create__title">Выберете игроков</div>
+      <div class="create__title">Выберете 10 игроков</div>
       <div class="create__select">
         <MultiSelect
             class="w-full md:w-20rem"
@@ -14,59 +14,67 @@
             :maxSelectedLabels="10"
         />
       </div>
-      <div class="create__select">
-        <h2>Укажите игроков которые должны быть в одной команде</h2>
-        <div>
-          <MultiSelect
-              class="w-full md:w-20rem"
-              v-model="mandatoryPairs1"
-              :options="players"
-              filter
-              optionLabel="nickname"
-              placeholder="Должны играть вместе"
-              :minSelectedLabels="2"
-              :maxSelectedLabels="5"
-          />
+      <Transition name="fade">
+        <div v-if="selectedPlayers && selectedPlayers.length === 10">
+          <div class="create__subtitle">При необходимости укажите игроков которые должны быть в одной команде</div>
+          <div class="create__team">
+            <div class="create__select-mini">
+              <MultiSelect
+                  class="w-full md:w-20rem"
+                  v-model="mandatoryPairs1"
+                  :options="selectedPlayers"
+                  optionLabel="nickname"
+                  placeholder="Должны играть вместе"
+                  :minSelectedLabels="2"
+                  :maxSelectedLabels="5"
+              />
+            </div>
+            <div class="create__select-mini">
+              <MultiSelect
+                  class="w-full md:w-20rem"
+                  v-model="mandatoryPairs2"
+                  :options="selectedPlayers"
+                  optionLabel="nickname"
+                  placeholder="Должны играть вместе"
+                  :minSelectedLabels="2"
+                  :maxSelectedLabels="5"
+              />
+            </div>
+          </div>
         </div>
-        <div>
-          <MultiSelect
-              class="w-full md:w-20rem"
-              v-model="mandatoryPairs2"
-              :options="players"
-              filter
-              optionLabel="nickname"
-              placeholder="Должны играть вместе"
-              :minSelectedLabels="2"
-              :maxSelectedLabels="5"
-          />
+      </Transition>
+      <Transition name="fade">
+        <button class="create__btn" @click="splitTeams(selectedPlayers, mandatoryPairs1, mandatoryPairs2)"
+                v-if="selectedPlayers && selectedPlayers.length === 10">
+          Рассчитать
+        </button>
+      </Transition>
+      <p class="create__error">{{ error }}</p>
+      <Transition name="fade">
+        <div class="create__content" v-if="completedTeam1 && completedTeam2 && !error">
+          <ul class="create__list">
+            <li class="create__item" v-for="player in completedTeam1" :key="player.id">
+              <div class="create__name">{{ player.nickname }}</div>
+              <div class="create__score">{{ player.adr }}</div>
+            </li>
+            <li class="create__item create__item--final">
+              <div class="create__name">СРЕДНИЙ ADR</div>
+              <div class="create__score">{{ teamAdr1 }}</div>
+            </li>
+          </ul>
+          <ul class="create__list">
+            <li class="create__item" v-for="player in completedTeam2" :key="player.id">
+              <div class="create__name">{{ player.nickname }}</div>
+              <div class="create__score">{{ player.adr }}</div>
+            </li>
+            <li class="create__item create__item--final">
+              <div class="create__name">СРЕДНИЙ ADR</div>
+              <div class="create__score">{{ teamAdr2 }}</div>
+            </li>
+          </ul>
         </div>
-      </div>
-      <button class="create__btn" @click="splitTeams(selectedPlayers, mandatoryPairs1, mandatoryPairs2)">
-        Рассчитать
-      </button>
-      <div class="create__content" v-if="completedTeam1 && completedTeam2">
-        <ul class="create__list">
-          <li class="create__item" v-for="player in completedTeam1" :key="player.id">
-            <div class="create__name">{{ player.nickname }}</div>
-            <div class="create__score">{{ player.adr }}</div>
-          </li>
-          <li class="create__item create__item--final">
-            <div class="create__name">СРЕДНИЙ ADR</div>
-            <div class="create__score">{{ teamAdr1 }}</div>
-          </li>
-        </ul>
-        <ul class="create__list">
-          <li class="create__item" v-for="player in completedTeam2" :key="player.id">
-            <div class="create__name">{{ player.nickname }}</div>
-            <div class="create__score">{{ player.adr }}</div>
-          </li>
-          <li class="create__item create__item--final">
-            <div class="create__name">СРЕДНИЙ ADR</div>
-            <div class="create__score">{{ teamAdr2 }}</div>
-          </li>
-        </ul>
-      </div>
-      <button class="create__btn create__btn--share" v-if="completedTeam1 && completedTeam2">Поделиться</button>
+      </Transition>
+      <!--      <button class="create__btn create__btn&#45;&#45;share" v-if="completedTeam1 && completedTeam2">Поделиться</button>-->
     </div>
   </main>
 </template>
@@ -84,6 +92,8 @@ onMounted(async () => {
   players.value = usersCollection?.value;
 })
 
+const error = ref('');
+
 const selectedPlayers = ref();
 
 const mandatoryPairs1 = ref([]);
@@ -94,13 +104,24 @@ const teamAdr1 = ref(null);
 const completedTeam2 = ref(null);
 const teamAdr2 = ref(null);
 
-// todo добавить валидацию
 const splitTeams = (players, groups1, groups2) => {
+  error.value = '';
+
+  if (players.length < 10) {
+    return error.value = 'Вы не выбрали 10 игроков';
+  }
+
   let team1 = [];
   let team2 = [];
 
-  // Объединяем все игроки вместе
+  // Проверяем, чтобы группы не содержали одинаковых игроков
   const allMandatoryPlayers = [...groups1, ...groups2];
+  const uniquePlayers = new Set(allMandatoryPlayers.map(player => player.id));
+  if (uniquePlayers.size !== allMandatoryPlayers.length) {
+    return error.value = "Есть игроки, которые находятся в обеих обязательных группах.";
+  }
+
+  // Удаляем обязательных игроков из общего списка игроков
   const mandatoryPlayersIds = new Set(allMandatoryPlayers.map(player => player.id));
   let remainingPlayers = players.filter(player => !mandatoryPlayersIds.has(player.id));
 
@@ -165,8 +186,52 @@ const splitTeams = (players, groups1, groups2) => {
   }
 }
 
-.create__select {
+.create__subtitle {
+  font-size: 24px;
+  margin-bottom: 25px;
 
+  @media (max-width: 768px) {
+    font-size: 20px;
+    margin-bottom: 25px;
+  }
+}
+
+.create__select {
+  margin-bottom: 45px;
+  height: 50px;
+
+  .p-multiselect {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+  }
+}
+
+.create__team {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  column-gap: 45px;
+  margin-bottom: 50px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    row-gap: 20px;
+  }
+}
+
+.create__select-mini {
+  flex: 1;
+  height: 50px;
+
+  .p-multiselect {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+    height: 50px;
+  }
 }
 
 .create__btn {
@@ -179,8 +244,7 @@ const splitTeams = (players, groups1, groups2) => {
   background: #C91419;
   transition: all 0.2s linear;
   border-radius: 15px;
-  margin-bottom: 20px;
-  margin-top: 45px;
+  margin-bottom: 45px;
 
   &:hover {
     background: #fff;
@@ -197,6 +261,10 @@ const splitTeams = (players, groups1, groups2) => {
       color: #fff;
     }
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .create__content {
@@ -209,6 +277,7 @@ const splitTeams = (players, groups1, groups2) => {
   padding-right: 25px;
   display: flex;
   justify-content: space-between;
+  margin-bottom: 45px;
 
   @media (max-width: 1100px) {
     padding-top: 30px;
@@ -242,5 +311,59 @@ const splitTeams = (players, groups1, groups2) => {
   &--final {
     padding-top: 15px;
   }
+
+  @media (max-width: 768px) {
+    margin-left: 7px;
+    margin-right: 7px;
+  }
 }
+
+.create__error {
+  padding-bottom: 20px;
+  color: #C91419;
+}
+
+// transition
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+
+<style lang="scss">
+.p-multiselect-header {
+  height: 40px;
+  column-gap: 20px;
+  padding-left: 16px;
+}
+
+.p-multiselect-filter-container {
+  position: relative;
+
+  .p-multiselect-filter {
+    height: 22px;
+  }
+
+  svg {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+.p-multiselect-item {
+  padding-left: 16px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+
+  .p-checkbox {
+    margin-right: 12px;
+  }
+}
+
 </style>
